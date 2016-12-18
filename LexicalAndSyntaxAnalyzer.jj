@@ -1,0 +1,652 @@
+/**
+ *  JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(LexicalAndSyntaxAnalyzer)
+package cminus;
+
+public class LexicalAndSyntaxAnalyzer
+{
+  public static void main(String args [])
+  {
+    LexicalAndSyntaxAnalyzer parser = new LexicalAndSyntaxAnalyzer(System.in);
+    while (true)
+    {
+      System.out.println("========================================\nEnter C- program...");
+      try
+      {
+        LexicalAndSyntaxAnalyzer.ReInit(System.in);
+        LexicalAndSyntaxAnalyzer.analyze();
+      }
+      catch(TokenMgrError e)
+	  {
+        System.out.println("ANALYSIS FAILED: The program entered is an invalid C- program.");
+        System.out.println(e.getMessage());
+	  }
+	  catch(ParseException p)
+	  {
+        System.out.println("ANALYSIS FAILED: The program entered is an invalid C- program.");
+        System.out.println(p.getMessage());
+	  }
+    }
+  }
+}
+
+PARSER_END(LexicalAndSyntaxAnalyzer)
+
+SKIP :
+{
+    "\t"
+     | "\r"
+     |"\n"
+     |" "
+}
+
+/* Comments */
+SKIP :
+{
+    "/*" : COMMENT_STATE
+}
+
+<COMMENT_STATE> SKIP :
+{
+    "*/" : DEFAULT
+    | <~[]>
+}
+
+
+TOKEN :
+{
+	< #LETTER : [ "A"-"Z", "a"-"z" ] > |
+	< #DIGIT : [ "0"-"9" ] > |
+
+
+	< ELSE : "else" > |
+	< IF : "if" > |
+	< INT : "int" > |
+	< RETURN : "return" > |
+	< VOID : "void" > |
+	< WHILE : "while" > |
+
+	< ID : (< LETTER >)+ > |
+	< NUM : (< DIGIT >)+ > |
+	
+	< PLUS : "+" > |
+	< MINUS : "-" > |
+	< MULTIPLICATION : "*" > |
+	< DIVISION : "/" > |
+	< LESS : "<" > |
+	< LESS_EQUAL : "<=" > |
+	< GREATER_EQUAL : ">=" > |
+	< GREATER : ">" > |
+	< EQUAL : "==" > |
+	< NOT_EQUAL : "!=" > |
+	< ASSIGN : "=" > |
+	< SEMI_COLON : ";" > |
+	< COMMA : "," > |
+	< ROUND_BRACKET_OPEN : "(" > |
+	< ROUND_BRACKET_CLOSE : ")" > |
+	< BOX_BRACKET_OPEN : "[" > |
+	< BOX_BRACKET_CLOSE : "]" > |
+	< CURLY_BRACKET_OPEN : "{" > |
+	< CURLY_BRACKET_CLOSE : "}" >
+	
+	 
+}
+
+int analyze() :
+{}
+{
+  ( program() "---")
+  
+  {
+    System.out.println("=== Input program syntactically flawless ===\n");
+    return 1;  // returns 1 on successful parse
+  }
+}
+
+
+
+void program() :
+{}
+{
+  	declaration_list()
+}
+
+void declaration_list() :
+{}
+{
+  	 (declaration())+
+}
+
+void declaration() :
+{}
+{
+
+	 type_specifier() < ID > declaration_1()
+  
+	
+}
+void type_specifier() :
+{}
+{
+ < INT > | < VOID >
+  
+}
+void declaration_1() :
+{} {
+
+  var_declaration() |fun_declaration()
+  }
+  
+
+void var_declaration() :
+{}
+{
+
+  
+	< BOX_BRACKET_OPEN >< NUM >  < BOX_BRACKET_CLOSE > < SEMI_COLON >| < SEMI_COLON >
+}
+
+
+void fun_declaration() :
+{}
+{
+
+  
+	< ROUND_BRACKET_OPEN >  params()  < ROUND_BRACKET_CLOSE > compound_statement()
+			
+}
+
+void params() :
+{}
+{
+	//param_list()| < VOID >
+	< VOID >params_1() | <INT ><ID >(< BOX_BRACKET_OPEN >  < BOX_BRACKET_CLOSE > )?param_list_1()
+}
+
+void params_1() :
+{}
+{
+	(<ID >(< BOX_BRACKET_OPEN >  < BOX_BRACKET_CLOSE > )?param_list_1())?
+
+//param_list()| < VOID >
+	
+}
+
+
+void param() :
+{}
+{
+
+
+	type_specifier()  < ID >  (< BOX_BRACKET_OPEN >  < BOX_BRACKET_CLOSE > )?
+}
+
+void param_list_1() :
+{}
+{
+	
+
+	(<COMMA> param())*
+}
+
+void compound_statement() :
+{}
+{
+  < CURLY_BRACKET_OPEN >(local_declarations())? (statement_list())?<CURLY_BRACKET_CLOSE >
+}
+
+void local_declarations():
+{}
+{
+
+
+  (type_specifier() < ID >var_declaration())+
+}
+
+void statement_list():
+{}
+{
+	 (statement())+
+}
+
+void statement():
+{}
+{
+expression_statement()|compound_statement()|selection_statement()|iteration_statement()|return_statement() 
+
+}
+
+
+void expression_statement():
+{}
+{
+	(expression()< SEMI_COLON >|< SEMI_COLON >)
+}
+
+void expression():
+{}
+{  
+
+ < ID > expression_1() |
+ (< NUM > |(< ROUND_BRACKET_OPEN >  expression()  < ROUND_BRACKET_CLOSE >)) (expression_9())
+
+}
+
+void expression_1():
+{}
+{
+	 	    ((< ASSIGN >) expression())|
+	 < ROUND_BRACKET_OPEN >  args()   < ROUND_BRACKET_CLOSE >(expression_9())|
+	 (relop()additive_expression())|
+	 (addop()term()((relop())(additive_expression()))*)|
+	 (mulop()factor()(addop() term())*((relop())(additive_expression()))*|
+	 (< BOX_BRACKET_OPEN >expression() < BOX_BRACKET_CLOSE >expression_4())?)	   
+
+
+ //((< BOX_BRACKET_OPEN >expression() < BOX_BRACKET_CLOSE >)? < ASSIGN > expression() ) | expression_2()
+ 
+}
+
+void expression_4():
+{}
+{
+
+	((< ASSIGN >) expression())|
+	expression_9()
+
+}
+
+void expression_9():
+{}
+{
+
+	(	  (relop()additive_expression())|
+	 (addop()term()((relop())(additive_expression()))*)|
+	 (mulop()factor()(addop() term())*((relop())(additive_expression()))*))?
+
+}
+
+
+void simple_expression():
+{}
+{
+	
+	//additive_expression()simple_expression_1()
+
+	 additive_expression()(simple_expression_1())?
+}
+
+void simple_expression_1():
+{}
+{
+
+(relop()additive_expression())+
+	
+	
+}
+
+
+void relop():
+{}
+{
+		< LESS> |< LESS_EQUAL> |< GREATER_EQUAL > |< GREATER > |< EQUAL> |< NOT_EQUAL > 
+}
+
+void additive_expression():
+{}
+{
+  //→term additive_expression_1
+  
+	term() (additive_expression_1())?
+}
+
+ void additive_expression_1():
+{}
+{
+  //→(addop term additive_expression_1)?
+
+   (addop() term())+
+
+//(addop() term() additive_expression_1())?
+  
+	
+}
+
+
+void addop():
+{}
+{
+  < PLUS >|< MINUS >
+}
+
+void term():
+{}
+{
+  
+  factor()(term_1())?
+  
+}
+
+ void term_1():
+{}
+{
+(mulop() factor())+
+
+
+
+}
+
+void factor():
+{}
+{
+  <ROUND_BRACKET_OPEN > expression()<ROUND_BRACKET_CLOSE >|< NUM >|< ID > factor_1()
+
+}
+
+
+void factor_1():
+{}
+{
+  
+	//var_1()|args()
+	
+		  (<ROUND_BRACKET_OPEN > args()<ROUND_BRACKET_CLOSE >)|
+		  (< BOX_BRACKET_OPEN >expression() < BOX_BRACKET_CLOSE >)?
+	
+    
+ 
+
+}
+
+  
+void variable():
+{}
+{
+  < ID >(< BOX_BRACKET_OPEN > < NUM >  < BOX_BRACKET_CLOSE >)?
+}
+
+void var():
+{}
+{
+  //​ID​ var_1
+  < ID > var_1()
+  
+}
+
+void var_1():
+{}
+{
+  // ​[ ​expression​ ] ​| ε
+  
+	((< BOX_BRACKET_OPEN >expression() < BOX_BRACKET_CLOSE >)|
+	(< ROUND_BRACKET_OPEN > args()  < ROUND_BRACKET_CLOSE >))?
+  
+  
+
+}
+
+
+
+
+void selection_statement():
+{}
+{
+
+//statement → if (E) matched optional-tail | other
+//matched → if (E) matched else matched | other
+//optional-tail → else tail | ε
+//tail → if (E) tail | other
+
+// < IF > expression() matched_selection_statement()optional_tail()
+
+< IF >< ROUND_BRACKET_OPEN > expression()< ROUND_BRACKET_CLOSE >statement()optionalelse()
+
+  
+  //→matched_selection_statement|unmatched_selection_statement
+  
+}
+
+
+void optionalelse():
+{}
+{
+  //<optional_else> ⟶ else <statement> 
+  < ELSE >statement()
+}
+
+
+void call():
+{}
+{
+  < ID >< ROUND_BRACKET_OPEN > args()  < ROUND_BRACKET_CLOSE > 
+}
+
+
+void args() :
+{}
+{
+	 (arg_list())?
+}
+
+void arg_list() :
+{}
+{
+	 expression() (arg_list_1())?
+}
+
+void arg_list_1() :
+{}
+{
+	 (< COMMA > expression())+
+}
+
+void mulop():
+{}
+{
+  < MULTIPLICATION  > |	< DIVISION > 
+}
+
+
+
+void iteration_statement():
+{}
+{
+	<WHILE>expression() statement()
+}
+
+void return_statement():
+{}
+{
+  //​return ​return_statement_1
+  
+	<RETURN>(return_statement_1())
+}
+
+void return_statement_1():
+{}
+ {
+	< SEMI_COLON >|((expression())< SEMI_COLON >)
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*555
+public class LexicalAndSyntaxAnalyzer
+{
+  public static void main(String args []) throws ParseException
+  {
+    LexicalAndSyntaxAnalyzer parser = new LexicalAndSyntaxAnalyzer(System.in);
+    while (true)
+    {
+      System.out.println("Reading from standard input...");
+      System.out.print("Enter an expression like \"1+(2+3)*4;\" :");
+      try
+      {
+        switch (LexicalAndSyntaxAnalyzer.one_line())
+        {
+          case 0 : 
+          System.out.println("OK.");
+          break;
+          case 1 : 
+          System.out.println("Goodbye.");
+          break;
+          default : 
+          break;
+        }
+      }
+      catch (Exception e)
+      {
+        System.out.println("NOK.");
+        System.out.println(e.getMessage());
+        LexicalAndSyntaxAnalyzer.ReInit(System.in);
+      }
+      catch (Error e)
+      {
+        System.out.println("Oops.");
+        System.out.println(e.getMessage());
+        break;
+      }
+    }
+  }
+}
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+TOKEN : 
+{
+  < PLUS : "+" >
+| < MINUS : "-" >
+| < MULTIPLY : "*" >
+| < DIVIDE : "/" >
+}
+
+TOKEN :
+{
+  < CONSTANT : (< DIGIT >)+ >
+| < #DIGIT : [ "0"-"9" ] >
+}
+
+int one_line() :
+{}
+{
+  sum() ";"
+  {
+    return 0;
+  }
+| ";"
+  {
+    return 1;
+  }
+}
+
+void sum() :
+{}
+{
+  term()
+  (
+    (
+      < PLUS >
+    | < MINUS >
+    )
+    term()
+  )*
+}
+
+void term() :
+{}
+{
+  unary()
+  (
+    (
+      < MULTIPLY >
+    | < DIVIDE >
+    )
+    unary()
+  )*
+}
+
+void unary() :
+{}
+{
+  < MINUS > element()
+| element()
+}
+
+void element() :
+{}
+{
+  < CONSTANT >
+| "(" sum() ")"
+} */
